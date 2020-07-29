@@ -17,5 +17,6 @@ router.post('/declinerequest', authMiddleware.auth, appController.declineRequest
 router.get('/getprofileinfo', authMiddleware.auth, appController.getProfileInfo);
 router.post('/editprofileinfo', authMiddleware.auth, appController.editProfileInfo);
 router.post('/patientrecords', authMiddleware.auth, appController.patientRecords);
+router.get('/getproviders', authMiddleware.auth, appController.getProviders);
 
 module.exports = router;

@@ -8,7 +8,7 @@ const jwt = require('jsonwebtoken');
 const Doctor = require('../models/doctor');
 const Patient = require('../models/patient');
 
-const key = 'Medblocks-a-patient-centric-syst'
+//const key = 'Medblocks-a-patient-centric-syst'
 
 exports.Login = (req, res, next) => {
     const id = req.body.id;
@@ -66,7 +66,7 @@ exports.Signup = (req, res, next) => {
       function decrypt(text) {
         let iv = Buffer.from(text.iv, 'hex');
         let encryptedText = Buffer.from(text.encryptedData, 'hex');
-        let decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(key), iv);
+        let decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(text.key), iv);
         let decrypted = decipher.update(encryptedText);
         decrypted = Buffer.concat([decrypted, decipher.final()]);
         return decrypted.toString();

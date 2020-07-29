@@ -7,7 +7,7 @@ const Patient = require('../models/patient')
 const Doctor = require('../models/doctor')
 const Record = require('../models/records')
 
-const key = 'Medblocks-a-patient-centric-syst'
+//const key = 'Medblocks-a-patient-centric-syst'
 
 // Collective controllers
 
@@ -262,30 +262,8 @@ exports.getRecord = (req, res) => {
                 // }
 
                 // main()
-
-                let decrypted
-                function decrypt(text) {
-                    let iv = Buffer.from(text.iv, 'hex');
-                    let encryptedText = Buffer.from(text.encryptedData, 'hex');
-                    let decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(key), iv);
-                    let decrypted = decipher.update(encryptedText);
-                    decrypted = Buffer.concat([decrypted, decipher.final()]);
-                    return decrypted.toString();
-                }
-                decrypted = decrypt(patient.secretPhrase)
                 
-                const decryptedData = crypto.privateDecrypt(
-                    {
-                        key: patient.privateKey,
-                        cipher: 'aes-256-cbc',
-                        passphrase: decrypted
-                    },
-                    Buffer.from(record[0].recordID.recordBody, 'base64')
-                )
-
-                console.log(decryptedData.toString('ascii'))
-                
-                res.status(200).json({ recordBody: decryptedData.toString('base64'), recordTitle: record[0].recordID.recordTitle, status: res.statusCode.toString() })
+                res.status(200).json({ recordBody: record[0].recordID.recordBody, recordTitle: record[0].recordID.recordTitle, secretPhrase: patient.secretPhrase, status: res.statusCode.toString() })
             })
         }else{
             res.status(500).json({ message: 'You are not authorized to view this patients records'})
@@ -319,7 +297,11 @@ exports.patientRecords = (req, res) => {
 }
 
 exports.getProviders = (req, res) => {
-    //
+    const patientID = req.userID
+    Patient.findOne({ userID: patientID })
+    .then(patient => {
+        res.status(200).json({ providers: patient.doctors.items, status: res.statusCode.toString() })
+    })
 }
 
 exports.getRequests = (req, res, next) => {

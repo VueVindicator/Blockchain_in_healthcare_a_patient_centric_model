@@ -40,10 +40,28 @@
                     res.json()
                     .then(res => {
                         this.record.title = res.recordTitle
-                        let encrecord = Buffer.from(res.recordBody, 'base64')
+                        let decrypted = this.decrypt(res.secretPhrase)
+                        
+                        const decryptedData = crypto.privateDecrypt(
+                            {
+                                key: patient.privateKey,
+                                cipher: 'aes-256-cbc',
+                                passphrase: decrypted
+                            },
+                            Buffer.from(res.recordBody, 'base64')
+                        )
+
                         this.record.body = encrecord.toString('ascii')
                     })
                 })
+            },
+            decrypt(text) {
+                let iv = Buffer.from(text.iv, 'hex');
+                let encryptedText = Buffer.from(text.encryptedData, 'hex');
+                let decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(text.key), iv);
+                let decrypted = decipher.update(encryptedText);
+                decrypted = Buffer.concat([decrypted, decipher.final()]);
+                return decrypted.toString();
             }
         },
         created(){

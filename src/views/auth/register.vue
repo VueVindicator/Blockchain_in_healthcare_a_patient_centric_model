@@ -85,7 +85,7 @@
                     secretPhrase: '',
                     sex: ''
                 },
-                key: 'Medblocks-a-patient-centric-syst',
+                key: crypto.randomBytes(32),
                 iv: crypto.randomBytes(16)
             }
         },
@@ -94,7 +94,7 @@
                 let cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(this.key), this.iv);
                 let encrypted = cipher.update(text);
                 encrypted = Buffer.concat([encrypted, cipher.final()]);
-                return { iv: this.iv.toString('hex'), encryptedData: encrypted.toString('hex') };
+                return { iv: this.iv.toString('hex'), key: this.key.toString('hex'), encryptedData: encrypted.toString('hex') };
             },
             emailIsValid() {
               if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(this.user.email)){
