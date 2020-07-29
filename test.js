@@ -1,0 +1,4 @@
+const jwt = require('jsonwebtoken')
+var token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJRCI6IjVmMWVjZDYyODBjZDkyMjk0Yzg2NzA3ZSIsInVzZXJJRCI6Ik1CMFI4M0QwWSIsInVzZXJuYW1lIjoic2FtdWVsIGphbWVzIiwicm9sZSI6InBhdGllbnQiLCJpYXQiOjE1OTU4NTU0NTN9.wp1hXoACIIioHk16wwKcIcvro4wTT_5XB6fQqRuWe10'
+const decodedToken = jwt.verify(token, 'secretkey')
+console.log(decodedToken.userID)
