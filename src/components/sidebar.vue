@@ -1,3 +1,4 @@
+
 <template>
  <div>
   <nav class="navbar navbar-expand-lg navbar-dark">
@@ -31,7 +32,7 @@
           <li :class="[currentPage.includes('dashboard') ? activeClass : '']"><router-link :to="'/doctor/' + user.userID + '/dashboard'">Home</router-link></li>
           <li :class="[currentPage.includes('patient-list') ? activeClass : '']"><router-link :to="'/doctor/' + user.userID + '/patient-list'">Patients</router-link></li>
           <li :class="[currentPage.includes('add-patient') ? activeClass : '']"><router-link :to="'/doctor/' + user.userID + '/add-patient'">Add new Patient</router-link></li>
-          <li :class="[currentPage.includes('add-patient') ? activeClass : '']"><router-link :to="'/doctor/' + user.userID + '/profile'">Profile</router-link></li>
+          <li :class="[currentPage.includes('profile') ? activeClass : '']"><router-link :to="'/doctor/' + user.userID + '/profile'">Profile</router-link></li>
           <li :class="[currentPage.includes('block-explorer') ? activeClass : '']"><router-link to="/blockchain-route">Block Explorer</router-link></li>
       </ul>
       <ul v-else>
@@ -39,6 +40,7 @@
         <li :class="[currentPage.includes('providers') ? activeClass : '']"><router-link :to="'/patient/' + user.userID + '/providers'">Providers</router-link></li>
         <li :class="[currentPage.includes('records') ? activeClass : '']"><router-link :to="'/patient/' + user.userID + '/records'">Records</router-link></li>
         <li :class="[currentPage.includes('requests') ? activeClass : '']"><router-link :to="'/patient/' + user.userID + '/requests'">Requests</router-link></li>
+        <li :class="[currentPage.includes('profile') ? activeClass : '']"><router-link :to="'/patient/' + user.userID + '/profile'">Profile</router-link></li>
         <li :class="[currentPage.includes('block-explorer') ? activeClass : '']"><router-link to="/blockchain-route">Block Explorer</router-link></li>
     </ul>
       <button id="close-btn" class="btn btn-primary" @click="closeMenu">Close</button>

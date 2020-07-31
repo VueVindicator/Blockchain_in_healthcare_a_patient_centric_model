@@ -157,7 +157,7 @@
       left: 0;
       background: #333;
       color: #fff;
-      min-height: 100vh;
+      height: 100%;
       width: 300px;
       padding: 20px;
       z-index: 1000;

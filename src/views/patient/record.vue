@@ -10,7 +10,7 @@
 
         </div>
         <br>
-        <router-link :to="'/doctor/' + user.userID + '/patient-list/' + patientID + '/records'" class="btn btn-primary">Back to patient Records</router-link>
+        <router-link to="/patient/records" class="btn btn-primary">Back to Records List</router-link>
     </div>
 </template>
 <script>
@@ -22,7 +22,6 @@
                     title: '',
                     body: ''
                 },
-                patientID: '',
                 user: {}
             }
         },
@@ -35,7 +34,7 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        patientID: this.patientID,
+                        patientID: this.user.userID,
                         recordID: this.$route.params.recordID,
                     })
                 })
@@ -52,7 +51,6 @@
         },
         created(){
             this.user = user
-            this.patientID = this.$route.params.id
             this.getRecord()
         }
     }

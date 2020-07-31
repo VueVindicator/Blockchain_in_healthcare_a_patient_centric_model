@@ -1,5 +1,6 @@
 <template>
     <div class="col-md-12">
+        <loading :active.sync="isLoading" :can-cancel="true" :is-full-page="fullPage"></loading>
         <h2>Patient List</h2>
         <table class="table table-hover">
             <thead>
@@ -18,7 +19,7 @@
                         <router-link to="" class="btn btn-info">View patient info</router-link>
                     </td>
                     <td>
-                        <router-link :to="'patient-list/' + patient.patientID + '/records'" class="btn btn-success">View Records</router-link>
+                        <router-link :to="'/doctor/' + user.userID + '/patient-list/' + patient.patientID + '/records'" class="btn btn-success">View Records</router-link>
                     </td>
                 </tr>
             </tbody>
@@ -29,12 +30,16 @@
     export default {
         data(){
             return {
-                patients: {}
+                isLoading: false,
+                fullPage: true,
+                patients: {},
+                user: {}
             }
         },
         methods: {
             getPatients(){
-                fetch('http://localhost:8000/getpatients',{
+                this.isLoading = true
+                fetch('http://localhost:8000/getpatients', {
                     method: 'GET',
                     headers: {
                         Authorization: 'Bearer ' + token,
@@ -44,9 +49,8 @@
                 .then(res => {
                     res.json()
                     .then(res => {
-                        if(res.status === '200'){
-                            this.patients = res.patients
-                        }
+                        this.isLoading = false
+                        this.patients = res.patients
                     })
                 })
                 .catch(err => {
@@ -58,6 +62,7 @@
             },
         },
         created(){
+            this.user = user
             this.getPatients()
         }
     }

@@ -22,8 +22,9 @@ exports.getDashboard = (req, res) => {
     }
     user.then(user => {
         assigned = req.role == 'doctor' ? user.patients.items.length: user.doctors.items.length
+        records = req.role == 'patient' ? user.records.items.length: 'Not applicable'
         console.log(assigned)
-        res.status(200).json({activity: user.notifications.items, assigned: assigned})
+        res.status(200).json({activity: user.notifications.items, assigned: assigned, records: records})
     })
 }
 
@@ -207,9 +208,43 @@ exports.uploadRecord = (req, res) => {
                 method: 'GET'
             })
             patient.save();
-            res.status(200).json({ message: 'Record uploaded' })
         })
+        .catch(err => {
+            if (!err.statusCode) {
+                err.statusCode = 500;
+            }
+            next(err);
+        });
+        Doctor.findOne({ userID: req.userID })
+        .then(doctor => {
+            const notifications = [...doctor.notifications.items];
+
+            notifications.push({
+                notification: `You uploaded a new record for ${req.userID}`,
+                exptime: Date.now() + 36000
+            })
+
+            updatedNotifications = {
+                items: notifications
+            }
+
+            doctor.notifications = updatedNotifications
+            doctor.save()
+        })
+        .catch(err => {
+            if (!err.statusCode) {
+                err.statusCode = 500;
+            }
+            next(err);
+        });
+        res.status(200).json({ message: 'Record uploaded' })
     })
+    .catch(err => {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    });
 }
 
 exports.getPatientRecords = (req, res, next) => {
@@ -225,6 +260,12 @@ exports.getPatientRecords = (req, res, next) => {
             .then(patient => {
                 res.status(200).json({ patientRecords: patient.records.items, status: res.statusCode.toString() })
             })
+            .catch(err => {
+                if (!err.statusCode) {
+                    err.statusCode = 500;
+                }
+                next(err);
+            });
         }else{
             res.status(500).json({ message: 'You are not authorized to view this patients records'})
         }
@@ -262,8 +303,27 @@ exports.getRecord = (req, res) => {
                 // }
 
                 // main()
+                function decrypt(text) {
+                    let iv = Buffer.from(text.iv, 'hex');
+                    let encryptedText = Buffer.from(text.encryptedData, 'hex');
+                    let decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(text.key), iv);
+                    let decrypted = decipher.update(encryptedText);
+                    decrypted = Buffer.concat([decrypted, decipher.final()]);
+                    return decrypted.toString();
+                }
+
+                let decrypted = decrypt(patient.secretPhrase)
+                        
+                const decryptedData = crypto.privateDecrypt(
+                    {
+                        key: patient.privateKey,
+                        cipher: 'aes-256-cbc',
+                        passphrase: decrypted
+                    },
+                    Buffer.from(record[0].recordID.recordBody, 'base64')
+                )
                 
-                res.status(200).json({ recordBody: record[0].recordID.recordBody, recordTitle: record[0].recordID.recordTitle, secretPhrase: patient.secretPhrase, status: res.statusCode.toString() })
+                res.status(200).json({ recordBody: decryptedData.toString('base64'), recordTitle: record[0].recordID.recordTitle, secretPhrase: patient.secretPhrase, status: res.statusCode.toString() })
             })
         }else{
             res.status(500).json({ message: 'You are not authorized to view this patients records'})
@@ -293,7 +353,75 @@ exports.getKey = (req, res, next) => {
 // Patient related controllers
 
 exports.patientRecords = (req, res) => {
-    //
+    Patient.findOne({ userID: req.userID })
+    .populate('records.items.recordID')
+    .then(patient => {
+        res.status(200).json({ patientRecords: patient.records.items, status: res.statusCode.toString() })
+    })
+}
+
+exports.revokeAccess = (req, res) => {
+    const doctorID = req.body.doctorID
+    fetch('http://localhost:3001/transaction/broadcast', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            title: 'Rvoked access',
+            info: 'Sender revoked recepient access',
+            sender: req.userID,
+            recepient: doctorID
+        })
+    })
+    fetch('http://localhost:3001/mine', {
+        method: 'GET'
+    })
+    Doctor.findOne({userID: doctorID})
+    .then(doctor => {
+        const updatedPatients = doctor.patients.items.filter(item => {
+            return item.patientID !== req.userID
+        });
+        doctor.patients.items = updatedPatients
+
+        const notifications = [...doctor.notifications.items];
+
+        notifications.push({
+            notification: `${req.userID} revoked your access to their records`,
+            exptime: Date.now() + 36000
+        })
+
+        updatedNotifications = {
+            items: notifications
+        }
+
+        doctor.notifications = updatedNotifications
+
+        doctor.save()
+    })
+    Patient.findOne({userID: req.userID})
+    .then(patient => {
+        const updatedDoctors = patient.doctors.items.filter(item => {
+            return item.doctorID !== doctorID
+        });
+        patient.doctors.items = updatedDoctors
+
+        const notifications = [...patient.notifications.items];
+
+        notifications.push({
+            notification: `You revoked ${doctorID}'s access to your records`,
+            exptime: Date.now() + 36000
+        })
+
+        updatedNotifications = {
+            items: notifications
+        }
+
+        patient.notifications = updatedNotifications
+
+        patient.save()
+    })
+    res.status(200).json({message: 'Doctor\'s access has been revoked'})
 }
 
 exports.getProviders = (req, res) => {

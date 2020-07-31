@@ -11,6 +11,7 @@
             </div>
     
             <div class="bg-white rounded shadow-7 w-400 mw-100 p-6">
+                <loading :active.sync="isLoading" :can-cancel="true" :is-full-page="fullPage"></loading>
                 <h5 class="mb-7">Create a new account</h5>
     
                 <form>
@@ -20,7 +21,7 @@
                     </div>
                     
                     <div class="form-group">
-                        <input type="email" class="form-control" v-model="user.email" name="email" placeholder="Email">
+                        <input type="email" class="form-control" v-on:blur="checkEmail" v-model="user.email" name="email" placeholder="Email">
                     </div>
             
                     <div class="form-group">
@@ -77,6 +78,8 @@
     export default {
         data(){
             return {
+                isLoading: false,
+                fullPage: false,
                 user: {
                     name: '',
                     email: '',
@@ -94,7 +97,7 @@
                 let cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(this.key), this.iv);
                 let encrypted = cipher.update(text);
                 encrypted = Buffer.concat([encrypted, cipher.final()]);
-                return { iv: this.iv.toString('hex'), key: this.key.toString('hex'), encryptedData: encrypted.toString('hex') };
+                return { iv: this.iv.toString('hex'), key: this.key, encryptedData: encrypted.toString('hex') };
             },
             emailIsValid() {
               if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(this.user.email)){
@@ -103,8 +106,17 @@
                 return (false)
               }
             },
+            checkEmail(){
+                if(this.user.email !== '' && !this.emailIsValid()){
+                    Toast.fire({
+                        type: 'error',
+                        title: 'Enter a valid Email'
+                    })
+                }
+            },
             saveUser() {
-                var encrypted = this.encrypt(this.user.secretPhrase)
+                var encrypted = this.user.secretPhrase ? this.encrypt(this.user.secretPhrase) : ''
+                this.isLoading = true
                 fetch('http://localhost:8000/auth/register', {
                     method: 'PUT',
                     headers: {
@@ -120,7 +132,28 @@
                     })
                 })
                 .then(res => {
-                    this.$router.push('/login');
+                    this.isLoading = false;
+                    if(res.status == '401') {
+                        Toast.fire({
+                            type: 'error',
+                            title: 'Please Enter a secret Phrase'
+                        })
+                    }
+                    else if(res.status == '403') {
+                        Toast.fire({
+                            type: 'error',
+                            title: 'A user already exists with that Email'
+                        })
+                    }
+                    else if(res.status == '500') {
+                        Toast.fire({
+                            type: 'error',
+                            title: 'There was an error signing you up'
+                        })
+                    }
+                    else {
+                        this.$router.push('/login');
+                    }
                 })
                 .catch(err => {
                     Toast.fire({

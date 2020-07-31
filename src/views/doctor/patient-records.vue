@@ -1,5 +1,6 @@
 <template>
     <div class="col-md-12">
+        <loading :active.sync="isLoading" :can-cancel="true" :is-full-page="fullPage"></loading>
         <div v-if="authorized">
             <h2>Records of {{patientID}}</h2>
             <router-link to="newrecord" class="btn btn-primary">Upload new record</router-link>
@@ -24,6 +25,8 @@
                     </tr>
                 </tbody>
             </table>
+            <br>
+            <router-link :to="'/doctor/' + user.userID + '/patient-list/'" class="btn btn-primary">Back to patient List</router-link>
         </div>
         <div v-if="!authorized">
             <h2>{{message}}</h2>
@@ -34,15 +37,19 @@
     export default {
         data(){
             return {
+                isLoading: false,
+                fullPage: true,
                 patientRecords: {},
                 message: '',
                 authorized: true,
-                patientID: ''
+                patientID: '',
+                user: {}
             }
         },
         methods: {
             getPatientsRecords(){
                 this.patientID = this.$route.params.id
+                this.isLoading = true
                 fetch('http://localhost:8000/getpatientrecords',{
                     method: 'POST',
                     headers: {
@@ -54,17 +61,24 @@
                     })
                 })
                 .then(res => {
-                    res.json()
-                    .then(res => {
-                        if(res.status === '200'){
+                    if(res.status == '500') {
+                        Toast.fire({
+                            type: 'error',
+                            title: 'There was an error in fetching the patient\'s records'
+                        })
+                    }else {
+                        res.json()
+                        .then(res => {
+                            this.isLoading = false
                             console.log(res.patientRecords)
                             this.patientRecords = res.patientRecords
-                        }
-                        if(res.message){
-                            this.authorized = false
-                            this.message = res.message
-                        }
-                    })
+                            
+                            if(res.message){
+                                this.authorized = false
+                                this.message = res.message
+                            }
+                        })
+                    }
                 })
                 .catch(err => {
                     Toast.fire({
@@ -75,6 +89,7 @@
             }
         },
         created(){
+            this.user = user
             this.getPatientsRecords()
         }
     }

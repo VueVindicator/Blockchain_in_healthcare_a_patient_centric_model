@@ -11,6 +11,7 @@
             </div>
     
             <div class="bg-white rounded shadow-7 w-400 mw-100 p-6">
+                <loading :active.sync="isLoading" :can-cancel="true" :is-full-page="fullPage"></loading>
                 <h5 class="mb-7">Sign into your account</h5>
     
                 <form>
@@ -61,6 +62,8 @@
     export default {
         data(){
             return {
+                isLoading: false,
+                fullPage: false,
                 user: {
                     id: '',
                     password: '',
@@ -70,6 +73,7 @@
         },
         methods: {
             loginUser(){
+                this.isLoading = true;
                 fetch('http://localhost:8000/auth/login', {
                     method: 'POST',
                     headers: {
@@ -82,20 +86,38 @@
                     })
                 })
                 .then(res => {
-                    res.json()
-                    .then(res => {
-                        localStorage.setItem('token', res.token);
-                        localStorage.setItem('userId', res.userID);
-                        const remainingMilliseconds = 8640000
-                        const expiryDate = new Date(
-                            new Date().getTime() + remainingMilliseconds
-                        );
-                        localStorage.setItem('expiryDate', expiryDate.toISOString());
-                        if(res.role == 'doctor') this.$router.push('/doctor/'+ res.userID + '/dashboard')
-                        else this.$router.push('/patient/'+ res.userID + '/dashboard')
-                    })
+                    this.isLoading = false;
+                    console.log(res)
+                    if(res.status == '401') {
+                        Toast.fire({
+                            type: 'error',
+                            title: 'ID or Password is Invalid'
+                        })
+                    }
+                    else if(res.status == '500') {
+                        Toast.fire({
+                            type: 'error',
+                            title: 'There was an error logging you in'
+                        })
+                    }
+                    else {
+                        res.json()
+                        .then(res => {
+                            
+                            localStorage.setItem('token', res.token);
+                            localStorage.setItem('userId', res.userID);
+                            const remainingMilliseconds = 8640000
+                            const expiryDate = new Date(
+                                new Date().getTime() + remainingMilliseconds
+                            );
+                            localStorage.setItem('expiryDate', expiryDate.toISOString());
+                            if(res.role == 'doctor') this.$router.push('/doctor/'+ res.userID + '/dashboard')
+                            else this.$router.push('/patient/'+ res.userID + '/dashboard')
+                        })
+                    }
                 })
                 .catch(err => {
+                    this.isLoading = false;
                     Toast.fire({
                         type: 'error',
                         title: 'There was an error in logging into your account'

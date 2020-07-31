@@ -3,6 +3,9 @@ import Login from './views/auth/login.vue';
 import Register from './views/auth/register.vue';
 import PatientHome from './views/patient/home.vue';
 import PatientProfile from './views/patient/profile.vue';
+import PatientRecords from './views/patient/records.vue';
+import PatientRecordView from './views/patient/record.vue';
+import PatientProviders from './views/patient/providers.vue';
 import PatientDoctorRequests from './views/patient/requests.vue';
 import Layout from './views/layout/layout.vue';
 import DoctorHome from './views/doctor/home.vue';
@@ -34,6 +37,21 @@ export default [
             path: 'profile',
             name: 'patient-profile',
             component: PatientProfile
+        },
+        {
+            path: 'records',
+            name: 'patient-records',
+            component: PatientRecords
+        },
+        {
+            path: 'records/:recordID',
+            name: 'patient-record',
+            component: PatientRecordView
+        }, 
+        {
+            path: 'providers',
+            name: 'patient-providers',
+            component: PatientProviders
         },
         {
             path: 'requests',

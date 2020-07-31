@@ -43,6 +43,12 @@ exports.Login = (req, res, next) => {
               res.status(200).json({ token: token, userID: user.userID, role: user.role });
         })
       })
+      .catch(err => {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      });
     })
     .catch(err => {
       if (!err.statusCode) {
@@ -60,67 +66,93 @@ exports.Signup = (req, res, next) => {
     const role = req.body.role;
     const sex = req.body.sex
 
-    let decrypted
+    let userSign
 
-    if(role == 'patient'){
-      function decrypt(text) {
-        let iv = Buffer.from(text.iv, 'hex');
-        let encryptedText = Buffer.from(text.encryptedData, 'hex');
-        let decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(text.key), iv);
-        let decrypted = decipher.update(encryptedText);
-        decrypted = Buffer.concat([decrypted, decipher.final()]);
-        return decrypted.toString();
-      }
-      decrypted = decrypt(secretPhrase)
-    }else{
-      decrypted = "None given"
-    }
-    
-    const { publicKey, privateKey } = crypto.generateKeyPairSync("rsa", {
-      modulusLength: 4096,
-      publicKeyEncoding: {
-        type: 'pkcs1',
-        format: 'pem'
-      },
-      privateKeyEncoding: {
-        type: 'pkcs8',
-        format: 'pem',
-        cipher: 'aes-256-cbc',
-        passphrase: decrypted
-      }
-    })
-    //}
+    if (role == 'doctor') userSign = Doctor.findOne({ email: email })
+    else userSign = Patient.findOne({ email: email })
 
-    bcrypt
-    .hash(password, 12)
-    .then(hashedPw => {
-        if(role == 'doctor'){
-            const doctor = new Doctor({
-                email: email,
-                password: hashedPw,
-                name: name,
-                role: role,
-                sex: sex,
-                userID: ID()
-            });
-            return doctor.save()
-        }else{
-            const patient = new Patient({
-                email: email,
-                password: hashedPw,
-                name: name,
-                role: role,
-                sex: sex,
-                userID: ID(),
-                secretPhrase: secretPhrase,
-                publicKey: publicKey,
-                privateKey: privateKey
-            });
-            return patient.save();
+    userSign.then((user) => {
+      if(user){
+        const error = new Error('Email Exists.');
+        error.statusCode = 403;
+        throw error;
+      }else{
+
+        if(role == 'patient' && secretPhrase == ''){
+          const error = new Error('No secret phrase.');
+          error.statusCode = 401;
+          throw error;
         }
-    })
-    .then(result => {
-        res.status(201).json({ message: 'User created!', userId: result._id });
+    
+        let decrypted
+    
+        if(role == 'patient'){
+          function decrypt(text) {
+            let iv = Buffer.from(text.iv, 'hex');
+            let encryptedText = Buffer.from(text.encryptedData, 'hex');
+            let decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(text.key), iv);
+            let decrypted = decipher.update(encryptedText);
+            decrypted = Buffer.concat([decrypted, decipher.final()]);
+            return decrypted.toString();
+          }
+          decrypted = decrypt(secretPhrase)
+        }else{
+          decrypted = "None given"
+        }
+        
+        const { publicKey, privateKey } = crypto.generateKeyPairSync("rsa", {
+          modulusLength: 4096,
+          publicKeyEncoding: {
+            type: 'pkcs1',
+            format: 'pem'
+          },
+          privateKeyEncoding: {
+            type: 'pkcs8',
+            format: 'pem',
+            cipher: 'aes-256-cbc',
+            passphrase: decrypted
+          }
+        })
+        //}
+    
+        bcrypt
+        .hash(password, 12)
+        .then(hashedPw => {
+            if(role == 'doctor'){
+                const doctor = new Doctor({
+                    email: email,
+                    password: hashedPw,
+                    name: name,
+                    role: role,
+                    sex: sex,
+                    userID: ID()
+                });
+                return doctor.save()
+            }else{
+                const patient = new Patient({
+                    email: email,
+                    password: hashedPw,
+                    name: name,
+                    role: role,
+                    sex: sex,
+                    userID: ID(),
+                    secretPhrase: secretPhrase,
+                    publicKey: publicKey,
+                    privateKey: privateKey
+                });
+                return patient.save();
+            }
+        })
+        .then(result => {
+            res.status(201).json({ message: 'User created!', userId: result._id });
+        })
+        .catch(err => {
+          if (!err.statusCode) {
+            err.statusCode = 500;
+          }
+          next(err);
+        });
+      }
     })
     .catch(err => {
         if (!err.statusCode) {

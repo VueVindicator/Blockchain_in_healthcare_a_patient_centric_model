@@ -1,6 +1,6 @@
 <template>
     <div class="col-md-12">
-        <h2>Patient List</h2>
+        <h2>Providers List</h2>
         <table class="table table-hover">
             <thead>
                 <tr>
@@ -10,11 +10,11 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(patient, index) of patients">
+                <tr v-for="(provider, index) of providers">
                     <th scope="row">{{index + 1}}</th>
-                    <td>{{patient.patientID}}</td>
+                    <td>{{provider.doctorID}}</td>
                     <td>
-                        <button @click="revokeAccess" class="btn btn-success">Revoke Access</button>
+                        <button @click="revokeAccess(provider.doctorID)" class="btn btn-success">Revoke Access</button>
                     </td>
                 </tr>
             </tbody>
@@ -29,7 +29,28 @@
             }
         },
         methods: {
-            revokeAccess(){},
+            revokeAccess(doctorID){
+                fetch('http://localhost:8000/revokeaccess',{
+                    method: 'POST',
+                    headers: {
+                        Authorization: 'Bearer ' + token,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        doctorID: doctorID
+                    })
+                })
+                .then(res => {
+                    res.json()
+                    .then(res => {
+                        Toast.fire({
+                            type: 'error',
+                            title: res.message
+                        })
+                        Fire.$emit('AfterCreate')
+                    })
+                })
+            },
             getProviders(){
                 fetch('http://localhost:8000/getproviders',{
                     method: 'GET',
@@ -56,6 +77,9 @@
         },
         created(){
             this.getProviders()
+            Fire.$on('AfterCreate', () => {
+                this.getProviders();
+            });
         }
     }
 </script>

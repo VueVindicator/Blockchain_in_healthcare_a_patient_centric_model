@@ -18,6 +18,9 @@ Vue.use(VueProgressBar, {
     height: '8px'
 })
 
+import 'vue-loading-overlay/dist/vue-loading.css';
+Vue.component('Loading', require('vue-loading-overlay'));
+
 window.Swal = Swal
 
 const Toast = Swal.mixin({
