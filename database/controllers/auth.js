@@ -160,7 +160,7 @@ exports.Signup = (req, res, next) => {
           })
           
           let mailOptions = {
-            from: '"MedBlock Contact" <david.ajayi.anu@gmail.com>',
+            from: '"MedBlock Contact" <contact@shipizzyltd.com>',
             to: email,
             subject: 'Thanks for signing up on our platform',
             text: `Your MedBlock ID is ${ID()}`
