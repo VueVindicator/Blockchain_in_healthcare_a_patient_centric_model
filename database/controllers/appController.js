@@ -80,6 +80,12 @@ exports.searchPatient = (req, res, next) => {
             res.status(200).json({ patientID: user.userID, status: res.statusCode.toString() });
         }
     })
+    .catch(err => {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    });
 }
 
 exports.receiveRequest = (req, res, next) => {

@@ -21,6 +21,9 @@ Vue.use(VueProgressBar, {
 import 'vue-loading-overlay/dist/vue-loading.css';
 Vue.component('Loading', require('vue-loading-overlay'));
 
+import CKEditor from '@ckeditor/ckeditor5-vue';
+Vue.use(CKEditor);
+
 window.Swal = Swal
 
 const Toast = Swal.mixin({

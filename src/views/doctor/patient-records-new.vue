@@ -2,21 +2,27 @@
     <div class="col-md-12">
         <h2>Upload new record for Patient</h2>
         <br>
+        <p>Enter a new record</p>
+        <br>
         <form class="input-line">
+            <label>Record Title</label>
             <div class="form-group">
                 <input type="text" class="form-control" v-model="record.title" name="title" placeholder="Enter title">
             </div>
-            <div class="form-group input-group">
-                <textarea type="text" v-model="record.body" class="form-control"></textarea>
-                <div class="input-group-append ml-4">
-                    <button class="btn btn-primary" type="button" @click="uploadRecord">Go!</button>
-                </div>
+            <br>
+            <label>Record Body</label>
+            <ckeditor :editor="editor" v-model="record.body" :config="editorConfig"></ckeditor>
+            <br>
+            <div class="btn-group">
+                <button class="btn btn-primary" type="button" @click="uploadRecord">Upload file</button>
+                <button class="btn btn-primary" type="button" @click="uploadRecord">Submit</button>
             </div>
         </form>
     </div>
 </template>
 <script>
     import crypto from 'crypto'
+    import ClassicEditor from '@ckeditor/ckeditor5-build-classic'
     export default {
         data(){
             return{
@@ -25,7 +31,12 @@
                     title: '',
                     body: ''
                 },
-                encryptedrecord: ''
+                encryptedrecord: '',
+                editor: ClassicEditor,
+                editorConfig: {
+                    //
+                }
+ 
             }
         },
         methods: {

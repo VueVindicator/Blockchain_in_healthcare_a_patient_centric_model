@@ -52,15 +52,19 @@
                     })
                 })
                 .then(res => {
-                    res.json()
-                    .then(res => {
-                        //if(res.status === '401') 
-                        if(res.status === '200'){
+                    if(res.status == '401'){
+                        Toast.fire({
+                            type: 'error',
+                            title: 'A patient with that ID could not be found'
+                        })
+                    }else{
+                        res.json()
+                        .then(res => {
                             this.foundPatient = true
                             this.patient.Id = ''
                             this.patient.foundID = res.patientID
-                        }
-                    })
+                        })
+                    }
                 })
                 .catch(err => {
                     Toast.fire({

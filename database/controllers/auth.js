@@ -4,9 +4,11 @@ var ID = function () {
   return 'MB' + Math.random().toString(36).substr(2, 7).toUpperCase();
 };
 const crypto = require('crypto');
+const nodemailer = require('nodemailer')
 const jwt = require('jsonwebtoken');
 const Doctor = require('../models/doctor');
 const Patient = require('../models/patient');
+const { getMaxListeners } = require('../models/doctor');
 
 //const key = 'Medblocks-a-patient-centric-syst'
 
@@ -144,7 +146,34 @@ exports.Signup = (req, res, next) => {
             }
         })
         .then(result => {
-            res.status(201).json({ message: 'User created!', userId: result._id });
+          let transporter = nodemailer.createTransport({
+            host: 'mail.shipizzyltd.com',
+            port: 587,
+            secure: false,
+            auth: {
+              user: 'shipizzy',
+              pass: 'connected12345'
+            },
+            tls: {
+              rejectUnauthorized: false
+            }
+          })
+          
+          let mailOptions = {
+            from: '"MedBlock Contact" <david.ajayi.anu@gmail.com>',
+            to: email,
+            subject: 'Thanks for signing up on our platform',
+            text: `Your MedBlock ID is ${ID()}`
+          }
+
+          transporter.sendMail(mailOptions, (error, info) => {
+            if(error){
+              console.log(error)
+            }
+            console.log('Message sent: %s', info.messageId)
+          })
+
+          res.status(201).json({ message: 'User created!', userId: result._id });
         })
         .catch(err => {
           if (!err.statusCode) {

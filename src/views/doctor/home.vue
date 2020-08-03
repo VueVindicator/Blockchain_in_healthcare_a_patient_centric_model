@@ -47,9 +47,12 @@
             <div class="col-md-5">
                 <h2>Recent Activity</h2><br>
                 <div class="row">
-                    <div class="col-md-12">
+                    <div class="col-md-12" v-if="activity">
                         <p v-for="item in activity">{{item.notification}}</p>
                         <button class="btn btn-primary">View All Activity</button>
+                    </div>
+                    <div class="col-md-12" v-else>
+                        <p>You have no recent activity</p>
                     </div>
                 </div>
             </div>
