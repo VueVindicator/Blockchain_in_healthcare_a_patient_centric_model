@@ -67,6 +67,7 @@ exports.Signup = (req, res, next) => {
     const password = req.body.password;
     const role = req.body.role;
     const sex = req.body.sex
+    const medID = ID()
 
     let userSign
 
@@ -127,7 +128,7 @@ exports.Signup = (req, res, next) => {
                     name: name,
                     role: role,
                     sex: sex,
-                    userID: ID()
+                    userID: medID
                 });
                 return doctor.save()
             }else{
@@ -137,7 +138,7 @@ exports.Signup = (req, res, next) => {
                     name: name,
                     role: role,
                     sex: sex,
-                    userID: ID(),
+                    userID: medID,
                     secretPhrase: secretPhrase,
                     publicKey: publicKey,
                     privateKey: privateKey
@@ -163,7 +164,7 @@ exports.Signup = (req, res, next) => {
             from: '"MedBlock Contact" <contact@shipizzyltd.com>',
             to: email,
             subject: 'Thanks for signing up on our platform',
-            text: `Your MedBlock ID is ${ID()}`
+            text: `Your MedBlock ID is ${medID}`
           }
 
           transporter.sendMail(mailOptions, (error, info) => {
