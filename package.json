@@ -16,7 +16,7 @@
     "@ckeditor/ckeditor5-vue": "^1.0.1",
     "@peculiar/webcrypto": "^1.1.2",
     "admin-lte": "^3.0.5",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "bootstrap": "^4.5.0",
     "crypto": "^1.0.1",
     "jquery": "^3.5.1",
