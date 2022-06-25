@@ -23,7 +23,7 @@
     "jsonwebtoken": "^8.5.1",
     "localstorage-ponyfill": "^1.0.2",
     "mongoose": "^5.9.22",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^2.6.7",
     "nodemon": "^2.0.4"
   }
 }
